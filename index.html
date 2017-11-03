@@ -1,0 +1,106 @@
+﻿<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MySQL SQL 在线分析 - 聚保物流IT部 - lisea</title>
+<link rel="stylesheet" type="text/css" href="css/bootstrap.css">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div id="top-image">
+  <div id="content" class="container center-block">
+    <div class="jumbotron">
+      <div class="container">
+        <h1>SQL分析</h1>
+        <p>这是一个测试环境下SQL在线语句分析、优化工具。</p>
+        <p>Version: v1.0.1 - Email: cnlisea@126.com</p>
+        <div class="input-group input-group-lg"> 
+          <span class="input-group-addon" id="sizing-addon1"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span></span>
+          <input type="text" class="form-control" placeholder="输入SQL语句" aria-describedby="sizing-addon1">
+          <span class="input-group-btn">
+          <button class="btn btn-default" id="sql-btn" data-method="notice" type="button">分 析</button>
+          </span> 
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="js/jquery.min.js"></script>
+<script src="js/ios-parallax.js"></script>
+<script src="js/layer.js"></script> 
+<script type="text/javascript">
+
+$(document).ready(function() {
+  $('#top-image').iosParallax({
+	  movementFactor: 50
+  });
+  
+  $('#sql-btn').on("click",function(){
+    var input = $('.input-group input[type="text"]');
+    if (input.val() == '') {
+      return input.focus();
+    }
+
+    // 加载层面
+    var locad = layer.load(0); //又换了种风格，并且设定最长等待10秒
+
+    //　设置最长超时时间
+    var timeout = setTimeout(function() {
+      // 取消加载层显示
+      layer.close(locad);
+
+      layer.msg('SQL解析超时!', {icon: 2});
+    }, 6000);
+
+    // ajax 调用请求
+    $.ajax({
+      type: 'POST',
+      url: 'sql.php',
+      async: false,
+      contentType: "application/json; charset=utf-8",
+      data: JSON.stringify({
+        sql: input.val()
+      }),
+      //data: '{"sql":"'+input.val()+'"}',
+      success: function(msg){
+        // 取消加载层显示
+        layer.close(locad);
+
+        // 终止超时提示计时器
+        clearTimeout(timeout);
+
+        //弹窗显示出结果
+        layer.open({
+          type: 1
+          ,title: 'SQL分析结果'
+          ,closeBtn: false
+          ,area: '[400px,600px]'
+          ,shade: 0.8
+          ,id: 'LAY_layuipro' //设定一个id，防止重复弹出
+          ,btn: ['确定', '取消']
+          ,btnAlign: 'c'
+          ,anim: 0
+          ,moveType: 1 //拖拽模式，0或者1
+          ,content: '<div style="padding: 50px; line-height: 24px; background-color: #393D49; color: #fff; font-weight: 300; font-size: 24px; height: auto;" id="msg">'+ msg +'</div>'
+          ,success: function(layero){
+            var btn = layero.find('.layui-layer-btn');
+            btn.find('.layui-layer-btn0').on('click', function(){
+              layer.closeAll(); //疯狂模式，关闭所有层
+              // 状态提示
+              layer.msg("SQL分析完成!", {icon: 1});
+              
+              // 设置输入栏为空和设置输入栏焦点
+              input.val('').focus();
+            });
+          }
+        });
+      }
+    });
+  });
+});
+</script>
+</body>
+</html>
